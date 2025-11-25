@@ -13,8 +13,22 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      - name: Deploy to Vercel
+      # DEBUGGING STEP: This verifies if your token is valid
+      - name: Check Vercel Token
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          vercel --prod --yes
+          echo "Verifying Vercel Token..."
+          # This command prints the username associated with the token.
+          # If the token is invalid, this step will fail immediately.
+          vercel whoami --token=$VERCEL_TOKEN
+
+      - name: Deploy to Vercel
+        env:
+          # These 3 secrets are required for a non-interactive CI deploy
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          # We use the token explicitly in the command to avoid ambiguity
+          vercel --prod --yes --token=$VERCEL_TOKEN
